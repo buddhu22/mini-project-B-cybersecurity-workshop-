@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}Secure Workshop Resource Directory{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% if role == 'admin' %}admin-theme{% endif %}">
+{% if role %}
+<header class="topbar"><a class="brand" href="{{ url_for('resources.user_dashboard') if role == 'user' else url_for('admin.dashboard') }}">SWRD <span>Secure Workshop Resource Directory</span></a>
+  <nav aria-label="Main navigation">
+  {% if role == 'admin' %}<a href="{{ url_for('admin.dashboard') }}">Dashboard</a><a href="{{ url_for('admin.resource_list') }}">Resources</a><a href="{{ url_for('admin.sessions') }}">Sessions</a><a href="{{ url_for('admin.reports') }}">Reports</a><a href="{{ url_for('admin.audit_logs') }}">Audit Logs</a><a href="{{ url_for('admin.settings') }}">Settings</a>
+  {% else %}<a href="{{ url_for('resources.user_dashboard') }}">Dashboard</a><a href="{{ url_for('main.sessions') }}">Sessions</a><a href="{{ url_for('resources.directory') }}">Search Resources</a>{% endif %}
+  </nav><span class="role-badge">{{ role|upper }}</span>
+  <form class="inline" action="{{ url_for('auth.user_logout') if role == 'user' else url_for('admin.logout') }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="nav-button" type="submit">Logout</button></form>
+</header>
+{% endif %}
+<main class="container {% if not role %}auth-container{% endif %}">
+  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="messages">{% for category, message in messages %}<div class="notice {{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}{% endwith %}
+  {% block content %}{% endblock %}
+</main>
+{% if role == 'admin' %}<script src="{{ url_for('static', filename='js/admin-session.js') }}" defer></script>{% endif %}
+<footer>Secure Workshop Resource Directory <span>Educational prototype · Resource links are not fetched automatically</span></footer>
+</body></html>

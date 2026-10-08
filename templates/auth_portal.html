@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block title %}Welcome · Secure Workshop Resource Directory{% endblock %}{% block content %}
+<section class="auth-hero"><div class="auth-mark">S<span>W</span></div><p class="eyebrow">SECURE WORKSHOP</p><h1>Welcome to the Workshop Portal</h1><p>Please select how you want to continue.</p></section>
+<section class="auth-choice-grid">
+  <article class="auth-choice user-choice"><div class="choice-icon">♙</div><p class="eyebrow">PARTICIPANT PORTAL</p><h2>User</h2><p>Access workshop sessions, learning resources, and prerequisites.</p><a class="button" href="{{ url_for('auth.user_portal') }}">Continue as User <span>→</span></a></article>
+  <article class="auth-choice admin-choice"><div class="choice-icon">▣</div><p class="eyebrow">SECURE MANAGEMENT</p><h2>Administrator</h2><p>Sign in to manage resources, review status, and audit activity.</p><a class="button" href="{{ url_for('admin.login') }}">Administrator Login <span>→</span></a></article>
+</section><p class="auth-footnote">Workshop resources are provided for local educational use.</p>{% endblock %}
