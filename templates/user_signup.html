@@ -1,1 +1,35 @@
-{% extends 'base.html' %}{% block title %}Create Participant Account{% endblock %}{% block content %}<section class="form-shell"><a class="back-link" href="{{ url_for('auth.user_portal') }}">← Participant Portal</a><p class="eyebrow">GET STARTED</p><h1>Create your account</h1><p class="muted">Your password is stored as a secure hash.</p><form method="post" class="auth-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Full Name<input name="full_name" autocomplete="name" required maxlength="120" value="{{ values.full_name }}">{% if errors.full_name %}<small class="field-error">{{ errors.full_name }}</small>{% endif %}</label><label>Email<input type="email" name="email" autocomplete="email" required maxlength="254" value="{{ values.email }}">{% if errors.email %}<small class="field-error">{{ errors.email }}</small>{% endif %}</label><label>Password<input type="password" name="password" autocomplete="new-password" required>{% if errors.password %}<small class="field-error">{{ errors.password }}</small>{% else %}<small>12+ characters with uppercase, lowercase, number, and symbol.</small>{% endif %}</label><label>Confirm Password<input type="password" name="confirm_password" autocomplete="new-password" required>{% if errors.confirm_password %}<small class="field-error">{{ errors.confirm_password }}</small>{% endif %}</label><button class="button" type="submit">Create Account</button></form><p class="form-bottom">Already registered? <a href="{{ url_for('auth.user_login') }}">Sign in</a></p></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Create Participant Account{% endblock %}
+{% block content %}
+<section class="form-shell">
+  <a class="back-link" href="{{ url_for('auth.user_portal') }}">← Participant Portal</a>
+  <p class="eyebrow">GET STARTED</p>
+  <h1>Create your account</h1>
+  <p class="muted">Your password is stored as a secure hash.</p>
+  <form method="post" class="auth-form" id="signup-form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Full Name
+      <input name="full_name" autocomplete="name" required maxlength="120" value="{{ values.full_name }}">
+      {% if errors.full_name %}<small class="field-error">{{ errors.full_name }}</small>{% endif %}
+    </label>
+    <label>Email
+      <input type="email" name="email" autocomplete="email" required maxlength="254" value="{{ values.email }}">
+      {% if errors.email %}<small class="field-error">{{ errors.email }}</small>{% endif %}
+    </label>
+    <label>Password
+      <input type="password" name="password" autocomplete="new-password" required minlength="12" maxlength="256" aria-describedby="password-guidance password-feedback">
+      <small id="password-guidance">Password must have at least 12 characters, one uppercase letter, one lowercase letter, one number, and one symbol.</small>
+      {% if errors.password %}<small class="field-error">{{ errors.password }}</small>{% endif %}
+    </label>
+    <label>Confirm Password
+      <input type="password" name="confirm_password" autocomplete="new-password" required maxlength="256" aria-describedby="confirm-feedback">
+      {% if errors.confirm_password %}<small class="field-error">{{ errors.confirm_password }}</small>{% endif %}
+      <small id="confirm-feedback" aria-live="polite"></small>
+    </label>
+    <p id="password-feedback" class="field-error" role="status" aria-live="polite"></p>
+    <button class="button" type="submit">Create Account</button>
+  </form>
+  <p class="form-bottom">Already registered? <a href="{{ url_for('auth.user_login') }}">Sign in</a></p>
+</section>
+<script src="{{ url_for('static', filename='js/signup-validation.js') }}" defer></script>
+{% endblock %}
