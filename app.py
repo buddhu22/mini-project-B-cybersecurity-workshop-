@@ -1,4 +1,5 @@
 import logging
+import os
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
@@ -137,6 +138,14 @@ def initialize_database():
     if username and password and not AdminAccount.query.filter_by(username=username).first():
         db.session.add(AdminAccount(username=username, password_hash=generate_password_hash(password)))
         db.session.commit()
+
+
+if os.getenv("RENDER", "").lower() == "true" and __name__ != "__main__":
+    # Gunicorn imports app:app instead of executing this module as a script.
+    # Render services need their schema and environment-provisioned admin ready
+    # before the first login request reaches a database-backed route.
+    with app.app_context():
+        initialize_database()
 
 
 if __name__ == "__main__":

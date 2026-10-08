@@ -62,6 +62,12 @@ python app.py
 
 Initialization creates/migrates the SQLite schema, seeds all 11 timetable entries and the provided resource references, and provisions the first admin from environment configuration. Open http://127.0.0.1:5000/.
 
+### Deploy on Render
+
+Create a Python Web Service connected to this repository. Use `pip install -r requirements.txt` as the build command and `gunicorn app:app` as the start command. Render startup initializes the database schema, workshop seed data, and first administrator from environment variables.
+
+Set `FLASK_SECRET_KEY`, `FLASK_JWT_SECRET_KEY`, `ADMIN_USERNAME`, and `ADMIN_PASSWORD` in the Render service environment. SQLite on Render is ephemeral by default, so use Render Postgres or a persistent disk if participant accounts and admin changes must survive restarts and deployments.
+
 ### Portal URLs
 
 - Landing page: /  
