@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab Report — Secure Workshop Resource Directory</title>
+  <style>
+    :root{--navy:#17345f;--blue:#2e5ca8;--ink:#202b3a;--muted:#5d6b7d;--line:#d8e0ea;--paper:#f4f7fb;--green:#16734b}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 "Segoe UI",Arial,sans-serif}
+    main{width:min(900px,calc(100% - 32px));margin:32px auto;background:white;padding:58px 68px;box-shadow:0 8px 32px #1b315018}
+    h1,h2,h3{color:var(--navy);line-height:1.25}h1{font-size:32px;margin:0 0 8px}h2{font-size:22px;border-bottom:2px solid var(--line);padding-bottom:8px;margin:34px 0 14px}h3{font-size:17px;margin:24px 0 8px}
+    .cover{text-align:center;border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:28px}.cover .eyebrow{letter-spacing:.15em;color:var(--blue);font-size:12px;font-weight:700}.subtitle{color:var(--muted);margin:0}
+    .meta{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;text-align:left;margin:25px auto 0;max-width:620px}.meta div{border-bottom:1px solid var(--line);padding:6px 0}.meta b{color:var(--navy)}
+    p{margin:9px 0}.summary{background:#f1f5fb;border-left:4px solid var(--blue);padding:14px 18px;margin:18px 0 26px}.pill{display:inline-block;background:#e4f4eb;color:var(--green);border-radius:20px;padding:3px 10px;font-weight:700;font-size:12px}
+    ul{padding-left:22px}li{padding:2px 0}.checklist{list-style:none;padding:0}.checklist li{position:relative;padding:5px 0 5px 30px}.checklist li:before{content:"✓";position:absolute;left:0;top:5px;color:var(--green);font-weight:800;font-size:17px}
+    table{width:100%;border-collapse:collapse;margin:13px 0 24px;font-size:13px}th,td{border:1px solid var(--line);padding:9px 10px;vertical-align:top;text-align:left}th{background:#edf2f8;color:var(--navy)}td.status{font-weight:700;color:var(--green);white-space:nowrap}.appendix{break-before:page}.notes-lines div{height:40px;border-bottom:1px solid #9eabba}.small{font-size:12px;color:var(--muted)}.result{color:var(--green);font-weight:700}.footer{border-top:1px solid var(--line);margin-top:38px;padding-top:12px;color:var(--muted);font-size:11px}
+    .flow{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin:18px 0}.flow span{flex:1;min-width:115px;text-align:center;border:1px solid var(--line);background:#f4f7fb;border-radius:8px;padding:12px 8px;font-weight:700;color:var(--navy)}.flow b{align-self:center;color:var(--blue)}.evidence-frame{width:100%;height:420px;border:1px solid var(--line);border-radius:8px;background:#f4f7fb}.shot-caption{font-size:12px;color:var(--muted);margin:4px 0 12px}.screen-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.screen-grid figure{margin:0;min-width:0}.screen-grid iframe{height:350px}
+    @media(max-width:640px){main{padding:30px 22px;margin:12px auto}.meta{grid-template-columns:1fr}table{font-size:11px}th,td{padding:6px}.screen-grid{grid-template-columns:1fr}}
+    @page{size:A4;margin:16mm}@media print{body{background:white;font-size:11pt}main{width:auto;margin:0;padding:0;box-shadow:none}.appendix{break-before:page}h2,h3{break-after:avoid}table,tr,figure{break-inside:avoid}.cover{padding-top:10mm}.footer{position:static}a{color:inherit;text-decoration:none}.evidence-frame{height:160mm}.screen-grid iframe{height:125mm}}
+  </style>
+</head>
+<body>
+<main>
+  <header class="cover">
+    <p class="eyebrow">FLASK APPLICATION · SECURITY WORKSHOP</p>
+    <h1>LAB REPORT</h1>
+    <p class="subtitle">Secure Workshop Resource Directory</p>
+    <div class="meta">
+      <div><b>Project type:</b> Secure web application</div>
+      <div><b>Framework:</b> Python Flask</div>
+      <div><b>Database:</b> SQLite with SQLAlchemy</div>
+      <div><b>Environment:</b> Local development</div>
+      <div><b>Test status:</b> <span class="pill">Authentication tests: 13 passed</span></div>
+      <div><b>Application URL:</b> http://127.0.0.1:5000/</div>
+    </div>
+  </header>
+
+  <section>
+    <h2>1. Aim</h2>
+    <p>To build and review a Flask application that provides workshop resources through separate participant and administrator portals, applying practical secure-development controls to authentication, access control, input validation, database operations, and logging.</p>
+    <h2>2. Application Overview</h2>
+    <p>Participants can register, sign in, browse the workshop timetable, and search learning resources. Administrators use an environment-provisioned account to manage resources and review reports and audit activity. Role checks are enforced on protected server routes.</p>
+    <h2>3. Tools and Technologies</h2>
+    <ul>
+      <li>Python and Flask with separate route blueprints.</li>
+      <li>SQLite and SQLAlchemy ORM.</li>
+      <li>Flask-JWT-Extended for access and refresh tokens.</li>
+      <li>Flask-WTF for CSRF protection; Flask-Limiter for login rate limits.</li>
+      <li>Werkzeug password hashing and Jinja template autoescaping.</li>
+      <li>Pytest for automated verification.</li>
+    </ul>
+    <h2>4. Security Implementation</h2>
+    <ul>
+      <li>Passwords are stored as hashes and are not logged in plain text.</li>
+      <li>JWTs are stored in HttpOnly cookies. Access-token lifetime is 15 minutes by default; refresh-token lifetime is one day.</li>
+      <li>Participant and administrator roles are checked on protected routes; participant tokens cannot access administrator routes.</li>
+      <li>CSRF tokens protect state-changing form and AJAX requests. Login endpoints are rate-limited.</li>
+      <li>Server-side validation constrains required values, lengths, allowed options, and URL schemes.</li>
+      <li>SQLAlchemy ORM queries use bound parameters; templates escape user-provided text.</li>
+      <li>Security headers and audit events are configured. Secrets and the local database are excluded from Git.</li>
+      <li>The participant login portal shows a timeout message after five minutes without activity. There is no inactivity timer or inactivity-based logout after login.</li>
+      <li>The development server binds to localhost. Production requires HTTPS and strong environment secrets.</li>
+    </ul>
+    <h2>5. Results</h2>
+    <p>Authentication tests after the timeout update: <span class="result">13 passed</span>. The preceding full suite reported 32 passed before that update. The rate limiter currently uses in-memory storage, so a persistent shared backend is needed for multi-process production hosting.</p>
+    <h2>6. Conclusion</h2>
+    <p>The project demonstrates how authentication, server-side role checks, safe database access, CSRF protection, validation, and careful logging can be combined in a Flask application. It also shows that browser interface behavior and server authorization must be handled separately. Production readiness would require deployment-grade hosting, HTTPS, managed secrets, and persistent rate-limit storage.</p>
+  </section>
+
+  <section class="appendix">
+    <h2>Appendix A — SSDLC Checklist for Every Mini-Project Phase</h2>
+    <table>
+      <thead><tr><th>Phase</th><th>Questions answered</th><th>Project evidence</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Requirements</td><td>Who will use it? What must it do? What is out of scope?</td><td>Participants register/sign in and browse sessions/resources; admins manage resources and review activity. Acceptance: role boundaries enforced, invalid inputs rejected, participant login portal times out after five idle minutes. Payments, external identity providers, and production deployment are out of scope.</td><td class="status">✓ Complete</td></tr>
+        <tr><td>Design</td><td>What are the components, data flows, and trust boundaries?</td><td>Flask blueprints separate auth, participant, resource, and admin routes. Browser → Flask → SQLAlchemy → SQLite; role checks protect admin routes. Password hashes and secrets are protected; JWTs use HttpOnly cookies.</td><td class="status">✓ Complete</td></tr>
+        <tr><td>Threat modelling</td><td>What could go wrong? What data or actions need protection?</td><td>Credential theft, CSRF, role bypass, XSS, SQL injection, brute force, and unsafe resource URLs are considered. Mitigations include password hashing, HttpOnly cookies, role checks, CSRF tokens, ORM binding, rate limits, output escaping, and URL validation.</td><td class="status">✓ Complete</td></tr>
+        <tr><td>Implementation</td><td>Are inputs validated? Are errors handled? Are secrets excluded?</td><td>Validators enforce required values, lengths, allowed values, and URL schemes; error pages avoid stack traces; .env, database, logs, and virtual environment are Git-ignored.</td><td class="status">✓ Complete</td></tr>
+        <tr><td>Verification</td><td>Do normal, invalid, and boundary cases behave correctly?</td><td>Pytest covers auth, role denial, CSRF, XSS-shaped input, SQL-injection-shaped searches, unsafe schemes, and validation. Auth suite after latest change: 13 passed.</td><td class="status">✓ Complete</td></tr>
+        <tr><td>Release / operation</td><td>How is it installed, configured, and run safely?</td><td>README documents dependencies, environment configuration, data initialization, and local run steps. Development binds to localhost; production requires HTTPS and strong environment secrets.</td><td class="status">✓ Complete</td></tr>
+        <tr><td>Maintenance</td><td>How would a defect or security issue be reported and fixed?</td><td>Report through the repository owner/issue tracker; reproduce with a test, fix the route or validator, add regression coverage, review, and release. Limitation: in-memory rate-limit storage is not suitable for multi-process production.</td><td class="status">✓ Complete</td></tr>
+      </tbody>
+    </table>
+    <h3>Architecture and data-flow sketch</h3>
+    <div class="flow" role="img" aria-label="Browser sends requests through Flask routes with validation and role checks to SQLAlchemy and SQLite; allowlisted workshop documents are served locally.">
+      <span>Participant / Admin<br>Browser</span><b>→</b><span>Flask Routes<br>Auth · Role · CSRF</span><b>→</b><span>SQLAlchemy<br>Validation · Models</span><b>→</b><span>SQLite<br>Accounts · Resources · Audit</span>
+    </div>
+    <p class="small">Trust boundary: browser input is untrusted; server-side validation and authorization run before database changes. Packaged documents are served only through an allowlist.</p>
+  </section>
+
+  <section class="appendix">
+    <h2>Appendix B — Mini-Project Demonstration Checklist</h2>
+    <ul class="checklist">
+      <li>State the problem and intended users: a secure workshop directory for participants and administrators.</li>
+      <li>Show the architecture and explain that account, timetable, resource, and audit records are stored in SQLite.</li>
+      <li>Demonstrate three workflows: participant login/resource search, timetable browsing, and administrator resource management.</li>
+      <li>Demonstrate invalid-input/failure cases: invalid login, CSRF rejection, role-based 403, and rejected unsafe URL schemes.</li>
+      <li>Explain controls and one limitation: hashed passwords, HttpOnly JWT cookies, CSRF, validation, role checks; in-memory rate limiting is for local prototype use.</li>
+      <li>Show test evidence, the application screenshot panels in Appendix G, README setup, and safe local run instructions.</li>
+    </ul>
+  </section>
+
+  <section class="appendix">
+    <h2>Appendix C — Common Test-Case Template</h2>
+    <table>
+      <thead><tr><th>Test ID</th><th>Feature</th><th>Input / precondition</th><th>Expected result</th><th>Actual result</th><th>Pass/Fail</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>TC-01</td><td>Participant signup</td><td>Valid name, email, and strong matching password</td><td>Create account and store a password hash</td><td>Account created; hash verified</td><td class="status">Pass</td><td>Automated</td></tr>
+        <tr><td>TC-02</td><td>Participant login</td><td>Valid registered credentials</td><td>Issue HttpOnly access and refresh cookies</td><td>Redirected to dashboard; cookies set</td><td class="status">Pass</td><td>Automated</td></tr>
+        <tr><td>TC-03</td><td>Login portal timeout</td><td>Participant login page inactive for five minutes</td><td>Show timeout message and disable login form</td><td>300-second timeout and message configured</td><td class="status">Pass</td><td>Portal only</td></tr>
+        <tr><td>TC-04</td><td>Post-login inactivity</td><td>Authenticated dashboard open without activity</td><td>No inactivity timer or inactivity logout</td><td>Dashboard has no countdown or warning</td><td class="status">Pass</td><td>Token expiry remains active</td></tr>
+        <tr><td>TC-05</td><td>Role authorization</td><td>Participant token requests administrator dashboard</td><td>Deny access</td><td>HTTP 403 returned</td><td class="status">Pass</td><td>Automated</td></tr>
+        <tr><td>TC-06</td><td>CSRF protection</td><td>POST without a valid CSRF token</td><td>Reject state-changing request</td><td>HTTP 400 returned</td><td class="status">Pass</td><td>Automated</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="appendix">
+    <h2>Appendix D — Security Review Checklist</h2>
+    <ul class="checklist">
+      <li>Only synthetic or authorized data is used.</li>
+      <li>Inputs are checked for type, length, allowed values, and missing values.</li>
+      <li>Database queries use parameters rather than string concatenation.</li>
+      <li>Passwords are not stored or logged in plain text; prototype credentials are for local educational use.</li>
+      <li>Secrets are not hard-coded or committed to version control.</li>
+      <li>User-facing error messages do not expose stack traces or sensitive paths.</li>
+      <li>State-changing actions use appropriate request methods and CSRF protection.</li>
+      <li>Logs record useful events while avoiding unnecessary personal or secret data.</li>
+      <li>Resource file access uses an allowlist; request size is limited and missing resources return an error page.</li>
+      <li>The application binds to localhost during development unless deployment is authorized.</li>
+      <li>Dependencies and setup instructions are documented.</li>
+      <li>Known limitations and future improvements are stated honestly.</li>
+    </ul>
+  </section>
+
+  <section class="appendix">
+    <h2>Appendix E — Submission Checklist</h2>
+    <ul class="checklist">
+      <li>Source code and project folder structure are included.</li>
+      <li>README includes setup and execution steps.</li>
+      <li>Database schema and resource seeding code are included.</li>
+      <li>Architecture and application flow are described in this report and project documentation.</li>
+      <li>Test cases and observed results are included in this report and the test report.</li>
+      <li>Key application pages are shown in the screenshot evidence panels in Appendix G.</li>
+      <li>Security observations and limitations are documented.</li>
+      <li>The conclusion describes project outcomes and security lessons learned.</li>
+    </ul>
+  </section>
+
+  <section class="appendix">
+    <h2>Appendix F — Workshop Notes</h2>
+    <div class="notes-lines"><div></div><div></div><div></div><div></div><div></div></div>
+  </section>
+  <section class="appendix">
+    <h2>Appendix G — Application Screenshot Evidence</h2>
+    <p class="small">These embedded browser views show the running local application. Keep the Flask server running while opening or printing this HTML report. Use Print → Save as PDF to preserve the visual evidence.</p>
+    <figure><iframe class="evidence-frame" src="http://127.0.0.1:5000/" title="Portal landing page"></iframe><figcaption class="shot-caption">Figure G-1. Public portal and participant/administrator entry points.</figcaption></figure>
+    <div class="screen-grid">
+      <figure><iframe src="http://127.0.0.1:5000/user/login" title="Participant login"></iframe><figcaption class="shot-caption">Figure G-2. Participant login portal and five-minute inactivity message behavior.</figcaption></figure>
+      <figure><iframe src="http://127.0.0.1:5000/admin/login" title="Administrator login"></iframe><figcaption class="shot-caption">Figure G-3. Separate administrator login; no public administrator signup.</figcaption></figure>
+    </div>
+  </section>
+  <footer class="footer">Secure Workshop Resource Directory · Lab report · Print-ready A4 layout</footer>
+</main>
+</body>
+</html>
